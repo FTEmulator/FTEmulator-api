@@ -1,10 +1,10 @@
-package com.ftemulator.FTEmulator_api;
+package com.ftemulator.ftemulator_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FtEmulatorApiApplicationTests {
+class FtemulatorApiApplicationTests {
 
 	@Test
 	void contextLoads() {
