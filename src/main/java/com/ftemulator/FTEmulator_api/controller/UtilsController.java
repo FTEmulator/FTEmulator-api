@@ -1,4 +1,4 @@
-package com.ftemulator.controller;
+package com.ftemulator.ftemulator_api.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/utils")
+@RequestMapping("/api/utils")
 public class UtilsController {
     @GetMapping("/status")
     public ResponseEntity<Void> status() {
