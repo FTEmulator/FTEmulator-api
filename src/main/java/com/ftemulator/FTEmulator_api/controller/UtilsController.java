@@ -1,4 +1,4 @@
-package com.ftemulator.ftemulator_api.controller;
+package com.ftemulator.FTEmulator_api.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
