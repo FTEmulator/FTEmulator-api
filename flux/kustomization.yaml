@@ -3,3 +3,4 @@ resources:
 #  - restart-job.yaml
 generatorOptions:
   disableNameSuffixHash: true
+  
