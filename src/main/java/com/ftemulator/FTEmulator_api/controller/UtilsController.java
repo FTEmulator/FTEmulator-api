@@ -10,6 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UtilsController {
     @GetMapping("/status")
     public ResponseEntity<Void> status() {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
