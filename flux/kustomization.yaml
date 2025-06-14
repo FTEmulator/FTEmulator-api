@@ -1,5 +1,5 @@
 resources:
   - job.yaml
-  - restart-job.yaml
+#  - restart-job.yaml
 generatorOptions:
   disableNameSuffixHash: true
