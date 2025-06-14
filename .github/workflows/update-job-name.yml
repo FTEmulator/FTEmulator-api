@@ -1,0 +1,28 @@
+name: Update Job Name for FluxCD
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get commit hash
+        id: vars
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Replace job name in job.yaml
+        run: sed -i "s/website-update-job-.*/website-update-job-${COMMIT_HASH}/" flux/job.yaml
+      - name: Commit and push changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add flux/job.yaml
+          git commit -m "Update Job name for commit $COMMIT_HASH" || echo "No changes to commit"
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/FTEmulator/FTEmulator-api.git HEAD:main

@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: job
+metadata:
+  name: api-update-job-REPLACEME
+  namespace: api
+spec:
+  ttlSecondsAfterFinished: 200
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initcontainers:
+        - name: git-clone
+          image: alpine/git:1.49.0
+          command: ["/bin/bash", "-c"]
+          args: 
+            - |
+              rm -rf /repo/*
+              mkdir -p /repo
+              cd /repo
+              git clone --depth 1 https://github.com/FTEmulator/FTEmulator-api
+          volumeMounts:
+            - name: repo-volume
+              mountPath: /repo
+      containers:
+        - name: sync
+          image: "gradle:8.7.0-jdk21"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              rm -rf /mnt/api/*
+              cd /repo
+              chmod +x gradlew
+              ./gradlew bootJar
+              cp -r ./build/libs/*.jar /mnt/api/app.jar
+              chmod +x /mnt/api/app.jar
+              echo "La api se actualizo correctamente"
+          volumeMounts:
+            - name: api-volume
+              mountPath: /mnt/api/
+            - name: repo-volume
+              mountPath: /repo
+      volumes:
+        - name: api-volume
+          persistentVolumeClaim:
+            claimName: api-pvc
+        - name: repo-volume
+          emptyDir: {}
