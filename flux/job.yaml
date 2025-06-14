@@ -12,7 +12,7 @@ spec:
       initContainers:
         - name: git-clone
           image: alpine/git:2.49.0
-          command: ["/bin/bash", "-c"]
+          command: ["/bin/sh", "-c"]
           args: 
             - |
               rm -rf /repo/*
