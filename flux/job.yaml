@@ -4,7 +4,7 @@ metadata:
   name: api-update-job-85dc1b6
   namespace: api
 spec:
-  ttlSecondsAfterFinished: 200
+  ttlSecondsAfterFinished: 3600
   backoffLimit: 4
   template:
     spec:
