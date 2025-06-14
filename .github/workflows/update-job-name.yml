@@ -17,7 +17,7 @@ jobs:
         id: vars
         run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Replace job name in job.yaml
-        run: sed -i "s/website-update-job-.*/website-update-job-${COMMIT_HASH}/" flux/job.yaml
+        run: sed -i "s/api-update-job-.*/api-update-job-${COMMIT_HASH}/" flux/job.yaml
       - name: Commit and push changes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
