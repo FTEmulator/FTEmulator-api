@@ -1,0 +1,17 @@
+# Job para reiniciar el deployment de la API tras actualizar el .jar
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: api-restart-job
+  namespace: api
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: kubectl
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - kubectl -n api rollout restart deployment api
