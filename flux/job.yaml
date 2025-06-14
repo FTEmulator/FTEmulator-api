@@ -9,7 +9,7 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
-      initcontainers:
+      initContainers:
         - name: git-clone
           image: alpine/git:1.49.0
           command: ["/bin/bash", "-c"]
@@ -18,7 +18,7 @@ spec:
               rm -rf /repo/*
               mkdir -p /repo
               cd /repo
-              git clone --depth 1 https://github.com/FTEmulator/FTEmulator-api
+              git clone --depth 1 https://github.com/FTEmulator/FTEmulator-api .
           volumeMounts:
             - name: repo-volume
               mountPath: /repo
