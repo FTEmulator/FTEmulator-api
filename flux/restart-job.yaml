@@ -1,3 +1,7 @@
+# FTEmulator - FTEmulator is a high-performance stock market investment simulator designed with extreme technical efficiency
+# Copyright (C) 2025-2025 Álex Frías (alexwebdev05)
+# Licensed under AGPL-3.0 - see LICENSE file
+# Commercial licensing: alexwebdev05@proton.me | GitHub: https://github.com/alexwebdev05
 # Job para reiniciar el deployment de la API tras actualizar el .jar
 apiVersion: batch/v1
 kind: Job
