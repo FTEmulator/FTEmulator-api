@@ -31,7 +31,7 @@ public class config {
     }
 
     @Bean
-    public UtilsGrpc.UtilsBlockingStub authUtilsBlockingStub(ManagedChannel channel) {
-        return UtilsGrpc.newBlockingStub(channel);
+    public UtilsGrpc.UtilsBlockingStub authUtilsBlockingStub(ManagedChannel authManagedChannel) {
+        return UtilsGrpc.newBlockingStub(authManagedChannel);
     }
 }
