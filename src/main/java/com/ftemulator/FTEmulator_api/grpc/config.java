@@ -30,7 +30,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 @Configuration
-public class Config {
+public class config {
     // ----- Variables ---------------------------------------------------
 
     // Auth-service
