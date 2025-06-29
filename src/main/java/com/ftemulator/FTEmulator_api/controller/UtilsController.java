@@ -36,14 +36,14 @@ import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.ProfileStatusRes
 public class UtilsController {
 
     private final UtilsGrpc.UtilsBlockingStub authUtilsStub;
-    private final UtilsGrpc.UtilsBlockingStub profileUtilsStub;
+    // private final UtilsGrpc.UtilsBlockingStub profileUtilsStub;
 
     public UtilsController(
-        @Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub,
-        @Qualifier("profileUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub profileUtilsStub
+        @Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub
+        // @Qualifier("profileUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub profileUtilsStub
     ) {
         this.authUtilsStub = authUtilsStub;
-        this.profileUtilsStub = profileUtilsStub;
+        // this.profileUtilsStub = profileUtilsStub;
     }
 
     // ----- Endpoints --------------------------------------------------
@@ -78,27 +78,27 @@ public class UtilsController {
         }
     }
 
-    // ProfileStatus
-    @GetMapping("/profileStatus")
-    public ResponseEntity<Void> profileStatus() {
+    // // ProfileStatus
+    // @GetMapping("/profileStatus")
+    // public ResponseEntity<Void> profileStatus() {
 
-        try {
-            // Hace la peticion
-            ProfileStatusResponse response = profileUtilsStub.profileStatus(
-                ProfileStatusRequest.newBuilder().build()
-            );
+    //     try {
+    //         // Hace la peticion
+    //         ProfileStatusResponse response = profileUtilsStub.profileStatus(
+    //             ProfileStatusRequest.newBuilder().build()
+    //         );
 
-            // Maneja la repuesta
-            if (response.getOk()) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(503).build();
-            }
+    //         // Maneja la repuesta
+    //         if (response.getOk()) {
+    //             return ResponseEntity.ok().build();
+    //         } else {
+    //             return ResponseEntity.status(503).build();
+    //         }
 
-            // Manejar errores
-        } catch(Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(503).build();
-        }
-    }
+    //         // Manejar errores
+    //     } catch(Exception e) {
+    //         e.printStackTrace();
+    //         return ResponseEntity.status(503).build();
+    //     }
+    // }
 }
