@@ -28,15 +28,22 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsGrpc;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusRequest;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusResponse;
+import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.ProfileStatusRequest;
+import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.ProfileStatusResponse;
 
 @RestController
 @RequestMapping("/api/utils")
 public class UtilsController {
 
-    private final UtilsGrpc.UtilsBlockingStub utilsStub;
+    private final UtilsGrpc.UtilsBlockingStub authUtilsStub;
+    private final UtilsGrpc.UtilsBlockingStub profileUtilsStub;
 
-    public UtilsController(@Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub utilsStub) {
-        this.utilsStub = utilsStub;
+    public UtilsController(
+        @Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub,
+        @Qualifier("profileUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub profileUtilsStub
+    ) {
+        this.authUtilsStub = authUtilsStub;
+        this.profileUtilsStub = profileUtilsStub;
     }
 
     // ----- Endpoints --------------------------------------------------
@@ -53,8 +60,32 @@ public class UtilsController {
 
         try {
             // Hace la peticion
-            AuthStatusResponse response = utilsStub.authStatus(
+            AuthStatusResponse response = authUtilsStub.authStatus(
                 AuthStatusRequest.newBuilder().build()
+            );
+
+            // Maneja la repuesta
+            if (response.getOk()) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(503).build();
+            }
+
+            // Manejar errores
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(503).build();
+        }
+    }
+
+    // ProfileStatus
+    @GetMapping("/profileStatus")
+    public ResponseEntity<Void> profileStatus() {
+
+        try {
+            // Hace la peticion
+            ProfileStatusResponse response = profileUtilsStub.profileStatus(
+                ProfileStatusRequest.newBuilder().build()
             );
 
             // Maneja la repuesta

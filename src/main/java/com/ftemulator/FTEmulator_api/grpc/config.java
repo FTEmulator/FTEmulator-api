@@ -19,6 +19,7 @@
  */
 package com.ftemulator.FTEmulator_api.grpc;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +30,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 @Configuration
-public class config {
+public class Config {
     // ----- Variables ---------------------------------------------------
 
     // Auth-service
@@ -38,6 +39,13 @@ public class config {
 
     @Value("${ftemulator.auth.port}")
     private int authPort;
+
+    // Profile-service
+    @Value("${ftemulator.profile.host}")
+    private String profileHost;
+
+    @Value("${ftemulator.profile.port}")
+    private int profilePort;
 
     // ----- Canales gRPC ------------------------------------------------
 
@@ -50,7 +58,22 @@ public class config {
     }
 
     @Bean
-    public UtilsGrpc.UtilsBlockingStub authUtilsBlockingStub(ManagedChannel authManagedChannel) {
+    public UtilsGrpc.UtilsBlockingStub authUtilsBlockingStub(
+            @Qualifier("authManagedChannel") ManagedChannel authManagedChannel) {
         return UtilsGrpc.newBlockingStub(authManagedChannel);
+    }
+
+    // Profile-service
+    @Bean
+    public ManagedChannel profileManagedChannel() {
+        return ManagedChannelBuilder.forAddress(profileHost, profilePort)
+                .usePlaintext()
+                .build();
+    }
+
+    @Bean
+    public UtilsGrpc.UtilsBlockingStub profileUtilsBlockingStub(
+            @Qualifier("profileManagedChannel") ManagedChannel profileManagedChannel) {
+        return UtilsGrpc.newBlockingStub(profileManagedChannel);
     }
 }
