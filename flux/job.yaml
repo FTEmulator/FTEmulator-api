@@ -5,7 +5,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: api-update-job-dc136f6
+  name: api-update-job-d2b9ebc
   namespace: api
 spec:
   ttlSecondsAfterFinished: 200
