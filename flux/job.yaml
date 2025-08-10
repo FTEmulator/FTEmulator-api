@@ -12,6 +12,7 @@ spec:
   backoffLimit: 4
   template:
     spec:
+      serviceAccountName: api-update-sa
       restartPolicy: OnFailure
       initContainers:
         - name: git-clone
@@ -38,7 +39,8 @@ spec:
               ./gradlew bootJar
               cp -r ./build/libs/*.jar /mnt/api/app.jar
               chmod +x /mnt/api/app.jar
-              echo "La api se actualizo correctamente"
+              echo "La API se actualizó correctamente. Reiniciando..."
+              kubectl rollout restart deployment api -n api
           volumeMounts:
             - name: api-volume
               mountPath: /mnt/api/
