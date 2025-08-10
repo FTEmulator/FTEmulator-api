@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsGrpc;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusRequest;
 import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusResponse;
-import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.ProfileStatusRequest;
-import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.ProfileStatusResponse;
 
 @RestController
 @RequestMapping("/api/utils")
@@ -51,7 +49,7 @@ public class UtilsController {
     // Status
     @GetMapping("/status")
     public ResponseEntity<Void> status() {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(201).build();
     }
 
     // AuthStatus
