@@ -49,7 +49,7 @@ public class UtilsController {
     // Status
     @GetMapping("/status")
     public ResponseEntity<Void> status() {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(201).build();
     }
 
     // AuthStatus
