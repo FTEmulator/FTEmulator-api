@@ -1,0 +1,30 @@
+syntax = "proto3";
+option java_package = "com.ftemulator.FTEmulator_api.proto";
+
+service Profile {
+
+    // ProfileStatus
+    rpc ProfileStatus (ProfileStatusRequest) returns (ProfileStatusResponse);
+
+    // Get user
+    rpc GetUser(UserRequest) returns (UserResponse);
+
+}
+
+// ProfileStatus
+message ProfileStatusRequest {}
+
+message ProfileStatusResponse {
+    bool ok = 1;
+}
+
+// Get user
+message UserRequest {
+    string userId = 1;
+}
+
+message UserResponse {
+    string userId = 1;
+    string name = 2;
+    string email = 3;
+}
