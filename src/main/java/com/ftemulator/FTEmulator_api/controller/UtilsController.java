@@ -19,14 +19,28 @@
  */
 package com.ftemulator.FTEmulator_api.controller;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftemulator.FTEmulator_api.proto.ProfileGrpc;
+
 @RestController
 @RequestMapping("/api/utils")
 public class UtilsController {
+
+    //private final UtilsGrpc.UtilsBlockingStub authUtilsStub;
+    private final ProfileGrpc.ProfileBlockingStub profileStub;
+
+    public UtilsController(
+        //@Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub,
+        @Qualifier("profileBlockingStub") ProfileGrpc.ProfileBlockingStub profileStub
+    ) {
+        //this.authUtilsStub = authUtilsStub;
+        this.profileStub = profileStub;
+    }
 
     // ----- Endpoints --------------------------------------------------
 
@@ -36,4 +50,27 @@ public class UtilsController {
         return ResponseEntity.ok().build();
     }
 
+    // ProfileStatus
+    // @GetMapping("/profileStatus")
+    // public ResponseEntity<Void> profileStatus() {
+
+    //     try {
+    //         // Hace la peticion
+    //         ProfileStatusResponse response = profileStub.profileStatus(
+    //             ProfileStatusRequest.newBuilder().build()
+    //         );
+
+    //         // Maneja la repuesta
+    //         if (response.getOk()) {
+    //             return ResponseEntity.ok().build();
+    //         } else {
+    //             return ResponseEntity.status(503).build();
+    //         }
+
+    //         // Manejar errores
+    //     } catch(Exception e) {
+    //         e.printStackTrace();
+    //         return ResponseEntity.status(503).build();
+    //     }
+    // }
 }
