@@ -1,0 +1,14 @@
+syntax = "proto3";
+option java_package = "com.ftemulator.FTEmulator_api.proto";
+
+service Utils {
+    // AuthStatus
+    rpc AuthStatus (AuthStatusRequest) returns (AuthStatusResponse);
+}
+
+// AuthStatus
+message AuthStatusRequest {}
+
+message AuthStatusResponse {
+    bool ok = 1;
+}

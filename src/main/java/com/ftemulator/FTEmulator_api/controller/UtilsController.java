@@ -25,23 +25,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ftemulator.FTEmulator_api.proto.auth.UtilsGrpc;
-import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusRequest;
-import com.ftemulator.FTEmulator_api.proto.auth.UtilsOuterClass.AuthStatusResponse;
+import com.ftemulator.FTEmulator_api.proto.ProfileGrpc;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusRequest;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusResponse;
 
 @RestController
 @RequestMapping("/api/utils")
 public class UtilsController {
 
-    private final UtilsGrpc.UtilsBlockingStub authUtilsStub;
-    // private final UtilsGrpc.UtilsBlockingStub profileUtilsStub;
+    //private final UtilsGrpc.UtilsBlockingStub authUtilsStub;
+    private final ProfileGrpc.ProfileBlockingStub profileStub;
 
     public UtilsController(
-        @Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub
-        // @Qualifier("profileUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub profileUtilsStub
+        //@Qualifier("authUtilsBlockingStub") UtilsGrpc.UtilsBlockingStub authUtilsStub,
+        @Qualifier("profileBlockingStub") ProfileGrpc.ProfileBlockingStub profileStub
     ) {
-        this.authUtilsStub = authUtilsStub;
-        // this.profileUtilsStub = profileUtilsStub;
+        //this.authUtilsStub = authUtilsStub;
+        this.profileStub = profileStub;
     }
 
     // ----- Endpoints --------------------------------------------------
@@ -53,37 +53,13 @@ public class UtilsController {
     }
 
     // AuthStatus
-    @GetMapping("/authStatus")
-    public ResponseEntity<Void> authStatus() {
-
-        try {
-            // Hace la peticion
-            AuthStatusResponse response = authUtilsStub.authStatus(
-                AuthStatusRequest.newBuilder().build()
-            );
-
-            // Maneja la repuesta
-            if (response.getOk()) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(503).build();
-            }
-
-            // Manejar errores
-        } catch(Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(503).build();
-        }
-    }
-
-    // // ProfileStatus
-    // @GetMapping("/profileStatus")
-    // public ResponseEntity<Void> profileStatus() {
+    // @GetMapping("/authStatus")
+    // public ResponseEntity<Void> authStatus() {
 
     //     try {
     //         // Hace la peticion
-    //         ProfileStatusResponse response = profileUtilsStub.profileStatus(
-    //             ProfileStatusRequest.newBuilder().build()
+    //         AuthStatusResponse response = authUtilsStub.authStatus(
+    //             AuthStatusRequest.newBuilder().build()
     //         );
 
     //         // Maneja la repuesta
@@ -99,4 +75,28 @@ public class UtilsController {
     //         return ResponseEntity.status(503).build();
     //     }
     // }
+
+    // ProfileStatus
+    @GetMapping("/profileStatus")
+    public ResponseEntity<Void> profileStatus() {
+
+        try {
+            // Hace la peticion
+            ProfileStatusResponse response = profileStub.profileStatus(
+                ProfileStatusRequest.newBuilder().build()
+            );
+
+            // Maneja la repuesta
+            if (response.getOk()) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(503).build();
+            }
+
+            // Manejar errores
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(503).build();
+        }
+    }
 }
