@@ -9,6 +9,9 @@ service Profile {
     // Get user
     rpc GetUser(UserRequest) returns (UserResponse);
 
+    // Register user
+    rpc CreateUser(RegisterUserRequest) returns (RegisterUserResponse);
+
 }
 
 // ProfileStatus
@@ -27,4 +30,19 @@ message UserResponse {
     string userId = 1;
     string name = 2;
     string email = 3;
+}
+
+// Register user
+message RegisterUserRequest {
+    string name = 1;
+    string email = 2;
+    string password = 3;
+    string country = 4;
+    int64 experience = 5;
+    string photo = 6;
+    string biography = 7;
+}
+
+message RegisterUserResponse {
+    bool created = 1;
 }

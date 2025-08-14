@@ -19,15 +19,21 @@
  */
 package com.ftemulator.FTEmulator_api.controller;
 
+// Dependencies
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftemulator.FTEmulator_api.entities.profile.User;
 import com.ftemulator.FTEmulator_api.proto.ProfileGrpc;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.RegisterUserRequest;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.RegisterUserResponse;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.UserRequest;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.UserResponse;
 import com.google.protobuf.util.JsonFormat;
@@ -60,7 +66,7 @@ public class ProfileController {
             // Sends the request to gRPC server
             UserResponse response = profileStub.getUser(request);
 
-            // Converts Protobuf to JSON
+            // Parse response to json
             String json = JsonFormat.printer().print(response);
 
             return ResponseEntity.ok(json);
@@ -68,6 +74,40 @@ public class ProfileController {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al obtener el usuario: " + e.getMessage());
+        }
+    }
+
+    // Register user
+    @PostMapping("/register")
+    public ResponseEntity<?> createUser(@RequestBody User userData) {
+        try {
+            
+            // Defines the request
+            RegisterUserRequest.Builder requestBuilder = RegisterUserRequest.newBuilder()
+                .setName(userData.name)
+                .setEmail(userData.email)
+                .setPassword(userData.password)
+                .setCountry(userData.country);
+            
+            if (userData.country != null) {requestBuilder.setCountry(userData.country);}
+            if (userData.experience > 0) {requestBuilder.setExperience(userData.experience);}
+            if (userData.photo != null) {requestBuilder.setPhoto(userData.photo);}
+            if (userData.biography != null) {requestBuilder.setBiography(userData.biography);}
+
+            RegisterUserRequest request = requestBuilder.build();
+
+            // Send request
+            RegisterUserResponse response = profileStub.createUser(request);
+
+            // Parse response to json
+            String json = JsonFormat.printer().print(response);
+
+            return ResponseEntity.ok(json);
+
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al crear el usuario: " + e.getMessage());
         }
     }
 }
