@@ -1,7 +1,7 @@
 syntax = "proto3";
 option java_package = "com.ftemulator.FTEmulator_api.proto";
 
-service Utils {
+service Auth {
     // AuthStatus
     rpc AuthStatus (AuthStatusRequest) returns (AuthStatusResponse);
 }

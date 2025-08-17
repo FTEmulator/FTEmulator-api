@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ftemulator.FTEmulator_api.entities.profile.User;
 import com.ftemulator.FTEmulator_api.proto.ProfileGrpc;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusRequest;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusResponse;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.RegisterUserRequest;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.RegisterUserResponse;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.UserRequest;
@@ -52,6 +54,29 @@ public class ProfileController {
     }
 
     // ----- Endpoints --------------------------------------------------
+
+    @GetMapping("/profileStatus")
+    public ResponseEntity<Void> profileStatus() {
+
+        try {
+            // Hace la peticion
+            ProfileStatusResponse response = profileStub.profileStatus(
+                ProfileStatusRequest.newBuilder().build()
+            );
+
+            // Maneja la repuesta
+            if (response.getOk()) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(503).build();
+            }
+
+            // Manejar errores
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(503).build();
+        }
+    }
 
     // Get user
     @GetMapping("/user")
