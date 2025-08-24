@@ -80,7 +80,7 @@ public class ProfileController {
 
     // Get user
     @GetMapping("/user")
-    public ResponseEntity<?> getUser(@RequestParam String userId) {
+    public ResponseEntity<String> getUser(@RequestParam String userId) {
         try {
             
             // Defines the request
@@ -92,7 +92,8 @@ public class ProfileController {
             UserResponse response = profileStub.getUser(request);
 
             // Parse response to Json
-            String json = JsonFormat.printer().print(response);
+            String json = JsonFormat.printer()
+                .print(response);
 
             return ResponseEntity.ok(json);
         } catch (Exception e) {
@@ -104,7 +105,7 @@ public class ProfileController {
 
     // Register user
     @PostMapping("/register")
-    public ResponseEntity<?> createUser(@RequestBody User userData) {
+    public ResponseEntity<String> createUser(@RequestBody User userData) {
         try {
             
             // Defines the request
@@ -125,7 +126,8 @@ public class ProfileController {
             RegisterUserResponse response = profileStub.createUser(request);
 
             // Parse response to json
-            String json = JsonFormat.printer().print(response);
+            String json = JsonFormat.printer()
+                .print(response);
 
             return ResponseEntity.ok(json);
 
