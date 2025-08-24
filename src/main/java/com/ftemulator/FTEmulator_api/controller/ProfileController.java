@@ -88,10 +88,10 @@ public class ProfileController {
                 .setUserId(userId)
                 .build();
 
-            // Sends the request to gRPC server
+            // Sends the request via gRPC
             UserResponse response = profileStub.getUser(request);
 
-            // Parse response to json
+            // Parse response to Json
             String json = JsonFormat.printer().print(response);
 
             return ResponseEntity.ok(json);

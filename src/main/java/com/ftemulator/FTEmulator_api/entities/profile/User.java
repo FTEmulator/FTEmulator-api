@@ -10,11 +10,11 @@ public class User {
     public String biography;
 
     // Mandatory
-    public User(String name, String email, String password) {
+    public User(String name, String email, String password, String country) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.experience = experience;
+        this.country = country;
     }
 
     // Getters
