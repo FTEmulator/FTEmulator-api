@@ -19,9 +19,15 @@
  */
 package com.ftemulator.FTEmulator_api.controller;
 
-// Dependencies
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,9 +35,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftemulator.FTEmulator_api.entities.profile.User;
 import com.ftemulator.FTEmulator_api.proto.ProfileGrpc;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.LoginRequest;
+import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.LoginResponse;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusRequest;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.ProfileStatusResponse;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.RegisterUserRequest;
@@ -40,9 +50,17 @@ import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.UserRequest;
 import com.ftemulator.FTEmulator_api.proto.ProfileOuterClass.UserResponse;
 import com.google.protobuf.util.JsonFormat;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+// # Dependent modules
+// authController: /login (profile) depend of /createtoken (auth)
+
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
+
+    @Value("${server.port}")
+    private String localPort;
     
     private final ProfileGrpc.ProfileBlockingStub profileStub;
 
@@ -92,8 +110,7 @@ public class ProfileController {
             UserResponse response = profileStub.getUser(request);
 
             // Parse response to Json
-            String json = JsonFormat.printer()
-                .print(response);
+            String json = JsonFormat.printer().print(response);
 
             return ResponseEntity.ok(json);
         } catch (Exception e) {
@@ -105,7 +122,7 @@ public class ProfileController {
 
     // Register user
     @PostMapping("/register")
-    public ResponseEntity<String> createUser(@RequestBody User userData) {
+    public ResponseEntity<String> createUser(@RequestBody User userData,  HttpServletRequest requestHttp) {
         try {
             
             // Defines the request
@@ -125,16 +142,105 @@ public class ProfileController {
             // Send request
             RegisterUserResponse response = profileStub.createUser(request);
 
-            // Parse response to json
-            String json = JsonFormat.printer()
-                .print(response);
+            // Confirm user creation
+            if (!response.getCreated()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                         .body("User not created");
+            }
 
-            return ResponseEntity.ok(json);
+            String userId = response.getUserId();
+
+            // Get ip and user-agent
+            String ipAddress = requestHttp.getHeader("X-Forwarded-For");
+            if (ipAddress == null) {
+                ipAddress = requestHttp.getRemoteAddr();
+            }
+            String sessionType = requestHttp.getHeader("User-Agent");
+
+            // Send userId to auth
+            Map<String, String> bodyMap = new HashMap<>();
+            bodyMap.put("userId", userId);
+            bodyMap.put("ipAddress", ipAddress);
+            bodyMap.put("sessionType", sessionType);
+
+            String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
+
+            // Send token request
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+
+            String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
+
+            String authResponse = restTemplate.postForObject(url, entity, String.class);
+
+            return ResponseEntity.ok(authResponse);
 
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al crear el usuario: " + e.getMessage());
+                .body("Error al registrar el usuario: " + e.getMessage());
+        }
+    }
+
+    // Login
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody User userData, HttpServletRequest requestHttp) {
+        try {
+
+            // Defines the request
+            LoginRequest request = LoginRequest.newBuilder()
+                .setEmail(userData.getEmail())
+                .setPassword(userData.getPassword())
+                .build();
+
+            // Send request
+            LoginResponse response = profileStub.login(request);
+
+            // Parse response to Json
+            String userId = response.getUserId();
+
+            if (userId.equals("invalid")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid credentials");
+            }
+
+            // Get ip and user-agent
+            String ipAddress = requestHttp.getHeader("X-Forwarded-For");
+            if (ipAddress == null) {
+                ipAddress = requestHttp.getRemoteAddr();
+            }
+            String sessionType = requestHttp.getHeader("User-Agent");
+
+            // Send userId to auth
+            Map<String, String> bodyMap = new HashMap<>();
+            bodyMap.put("userId", userId);
+            bodyMap.put("ipAddress", ipAddress);
+            bodyMap.put("sessionType", sessionType);
+
+            String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
+
+            // Send token request
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+
+            String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
+
+            String authResponse = restTemplate.postForObject(url, entity, String.class);
+
+            return ResponseEntity.ok(authResponse);
+            
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al verificar el usuario: " + e.getMessage());
         }
     }
 }

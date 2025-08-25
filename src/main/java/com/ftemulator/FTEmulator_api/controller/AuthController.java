@@ -3,6 +3,8 @@ package com.ftemulator.FTEmulator_api.controller;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -80,26 +82,28 @@ public class AuthController {
     }
 
     // Create token
-    @GetMapping("createtoken")
-    public ResponseEntity<String> createToken(@RequestBody Token tokenData) {
+    @PostMapping("/createtoken")
+    public ResponseEntity<String> createToken(@RequestBody Token userData) {
         try {
-
-            // Defines request
-            CreateTokenRequest.Builder requestBuilder = CreateTokenRequest.newBuilder()
-                .setUserId(tokenData.userId)
-                .setIpAddress(tokenData.ipAddress)
-                .setSessionType(tokenData.sessionType);
             
-            CreateTokenRequest request = requestBuilder.build();
+            // Defines the request
+            CreateTokenRequest request = CreateTokenRequest.newBuilder()
+                .setUserId(userData.getUserId())
+                .setIpAddress(userData.getIpAddress())
+                .setSessionType(userData.getSessionType())
+                .build();
 
-            // Serd request via gRPC
+            // Send Request via gRPC
             CreateTokenResponse response = authStub.createToken(request);
 
-            // Parse response Json
+            // Parse response to Json
             String json = JsonFormat.printer()
+                .includingDefaultValueFields()
                 .print(response);
             
             return ResponseEntity.ok(json);
+
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(503).build();
