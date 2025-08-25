@@ -3,13 +3,18 @@ package com.ftemulator.FTEmulator_api.controller;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ftemulator.FTEmulator_api.entities.auth.Token;
 import com.ftemulator.FTEmulator_api.proto.AuthGrpc;
 import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.AuthStatusRequest;
 import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.AuthStatusResponse;
+import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.CreateTokenRequest;
+import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.CreateTokenResponse;
 import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.VerifyTokenRequest;
 import com.ftemulator.FTEmulator_api.proto.AuthOuterClass.VerifyTokenResponse;
 import com.google.protobuf.util.JsonFormat;
@@ -76,4 +81,30 @@ public class AuthController {
     }
 
     // Create token
+    @PostMapping("/createtoken")
+    public ResponseEntity<String> createToken(@RequestBody Token userData) {
+        try {
+            
+            // Defines the request
+            CreateTokenRequest request = CreateTokenRequest.newBuilder()
+                .setUserId(userData.getUserId())
+                .setIpAddress(userData.getIpAddress())
+                .setSessionType(userData.getSessionType())
+                .build();
+
+            // Send Request via gRPC
+            CreateTokenResponse response = authStub.createToken(request);
+
+            // Parse response to Json
+            String json = JsonFormat.printer()
+                .includingDefaultValueFields()
+                .print(response);
+            
+            return ResponseEntity.ok(json);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(503).build();
+        }
+    }
 }
