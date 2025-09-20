@@ -1,5 +1,5 @@
 syntax = "proto3";
-option java_package = "com.ftemulator.FTEmulator_api.proto";
+option java_package = "com.ftemulator.ftemulator_api.proto";
 
 service Auth {
     // AuthStatus
