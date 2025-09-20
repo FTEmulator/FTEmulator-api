@@ -59,6 +59,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/profile")
 public class ProfileController {
 
+    @Value("${ftemulator.auth.host}")
+    private String authHost;
+
+    @Value("${ftemulator.auth.port}")
+    private String authPort;
+
     @Value("${server.port}")
     private String localPort;
     
@@ -172,8 +178,11 @@ public class ProfileController {
 
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
+            // Development
+            // String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
 
-            String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
+            // Prod
+            String url = "http://" + authHost + ":" + authPort + "/api/auth/createtoken";
 
             String authResponse = restTemplate.postForObject(url, entity, String.class);
 
