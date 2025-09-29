@@ -179,7 +179,7 @@ public class ProfileController {
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
             // Auth
-            String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
+            String url = "http://api-service:8080/api/auth/createtoken";
 
             String authResponse = restTemplate.postForObject(url, entity, String.class);
 
