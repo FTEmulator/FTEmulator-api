@@ -196,11 +196,13 @@ public class ProfileController {
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
             // Auth
-            String url = "http://" + apiHost + ":" + apiPort + "/api/auth/createtoken";
+            CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
-            String authResponse = restTemplate.postForObject(url, entity, String.class);
+            String json = JsonFormat.printer()
+                .includingDefaultValueFields()
+                .print(tokenResponse);
 
-            return ResponseEntity.ok(authResponse);
+            return ResponseEntity.ok(json);
 
         } catch (io.grpc.StatusRuntimeException e) {
             // Manejar errores específicos de gRPC
