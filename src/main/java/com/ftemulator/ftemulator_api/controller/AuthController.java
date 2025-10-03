@@ -18,6 +18,7 @@ import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenRequest;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenResponse;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.VerifyTokenRequest;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.VerifyTokenResponse;
+import com.ftemulator.ftemulator_api.services.AuthServices;
 import com.google.protobuf.util.JsonFormat;
 
 @RestController
@@ -25,11 +26,14 @@ import com.google.protobuf.util.JsonFormat;
 public class AuthController {
     
     private final AuthGrpc.AuthBlockingStub authStub;
-    
+    private final AuthServices authServices;
+
     public AuthController(
-        @Qualifier("authBlockingStub") AuthGrpc.AuthBlockingStub authStub
+        @Qualifier("authBlockingStub") AuthGrpc.AuthBlockingStub authStub,
+        AuthServices authServices
     ) {
         this.authStub = authStub;
+        this.authServices = authServices;
     }
 
     // ----- Endpoints --------------------------------------------------
@@ -60,30 +64,24 @@ public class AuthController {
     @GetMapping("/verifytoken")
     public ResponseEntity<String> verifyToken(@RequestParam String token) {
         try {
-
-            // Defines the request
-            VerifyTokenRequest request = VerifyTokenRequest.newBuilder()
-                .setToken(token)
-                .build();
-            
-            // Send request via gRPC
-            VerifyTokenResponse response = authStub.verifyToken(request);
+            VerifyTokenResponse response = authServices.verifyToken(token);
 
             if (response.getUserId().isEmpty()) {
                 return ResponseEntity.status(401).body("{\"error\":\"Token inválido o expirado\"}");
             }
 
-            // Parse response to Json
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
                 .print(response);
-            
+
             return ResponseEntity.ok(json);
+
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(503).build();
+            return ResponseEntity.status(503).body("{\"error\":\"Internal error\"}");
         }
     }
+
 
     // Create token
     @PostMapping("/createtoken")

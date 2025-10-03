@@ -39,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftemulator.ftemulator_api.entities.profile.User;
+import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenResponse;
 import com.ftemulator.ftemulator_api.proto.ProfileGrpc;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.LoginRequest;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.LoginResponse;
@@ -48,6 +49,7 @@ import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.RegisterUserRequest
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.RegisterUserResponse;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.UserRequest;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.UserResponse;
+import com.ftemulator.ftemulator_api.services.AuthServices;
 import com.google.protobuf.util.JsonFormat;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,12 +77,15 @@ public class ProfileController {
     private String localPort;
     
     private final ProfileGrpc.ProfileBlockingStub profileStub;
+    private final AuthServices authServices;
 
     public ProfileController(
-        @Qualifier("profileBlockingStub") ProfileGrpc.ProfileBlockingStub profileStub
+        @Qualifier("profileBlockingStub") ProfileGrpc.ProfileBlockingStub profileStub,
+        AuthServices authServices
     ) 
     {
         this.profileStub = profileStub;
+        this.authServices = authServices;
     }
 
     // ----- Endpoints --------------------------------------------------
@@ -218,6 +223,13 @@ public class ProfileController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User userData, HttpServletRequest requestHttp) {
         try {
+            System.out.println("Login request: " + userData);
+
+            // Verifica que los datos no sean nulos
+            if (userData.getEmail() == null || userData.getPassword() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Email y password son requeridos");
+            }
 
             // Defines the request
             LoginRequest request = LoginRequest.newBuilder()
@@ -249,20 +261,17 @@ public class ProfileController {
             bodyMap.put("ipAddress", ipAddress);
             bodyMap.put("sessionType", sessionType);
 
-            String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
-
             // Send token request
-            RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+            CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
-            String url = "http://" + apiHost + ":" + apiPort + "/api/auth/createtoken";
+            String json = JsonFormat.printer()
+                .includingDefaultValueFields()
+                .print(tokenResponse);
 
-            String authResponse = restTemplate.postForObject(url, entity, String.class);
-
-            return ResponseEntity.ok(authResponse);
+            return ResponseEntity.ok(json);
             
         } catch (Exception e) {
             return ResponseEntity
