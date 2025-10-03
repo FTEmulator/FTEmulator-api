@@ -258,8 +258,7 @@ public class ProfileController {
 
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
-
-            String url = "http://" + "localhost" + ":" + localPort + "/api/auth/createtoken";
+            String url = "http://" + apiHost + ":" + apiPort + "/api/auth/createtoken";
 
             String authResponse = restTemplate.postForObject(url, entity, String.class);
 
