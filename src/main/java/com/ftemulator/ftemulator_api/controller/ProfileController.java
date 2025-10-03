@@ -186,15 +186,6 @@ public class ProfileController {
             bodyMap.put("ipAddress", ipAddress);
             bodyMap.put("sessionType", sessionType);
 
-            String jsonBody = new ObjectMapper().writeValueAsString(bodyMap);
-
-            // Send token request
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
-
             // Auth
             CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
@@ -262,10 +253,6 @@ public class ProfileController {
             bodyMap.put("userId", userId);
             bodyMap.put("ipAddress", ipAddress);
             bodyMap.put("sessionType", sessionType);
-
-            // Send token request
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
 
             CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
