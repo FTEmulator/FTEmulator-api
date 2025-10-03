@@ -40,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ftemulator.ftemulator_api.entities.profile.User;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenResponse;
+import com.ftemulator.ftemulator_api.proto.AuthOuterClass.VerifyTokenResponse;
 import com.ftemulator.ftemulator_api.proto.ProfileGrpc;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.LoginRequest;
 import com.ftemulator.ftemulator_api.proto.ProfileOuterClass.LoginResponse;
@@ -115,9 +116,17 @@ public class ProfileController {
 
     // Get user
     @GetMapping("/user")
-    public ResponseEntity<String> getUser(@RequestParam String userId) {
+    public ResponseEntity<String> getUser(@RequestParam String token) {
         try {
             
+            VerifyTokenResponse authResponse = authServices.verifyToken(token);
+
+            if (authResponse.getUserId().isEmpty()) {
+                return ResponseEntity.status(401).body("{\"error\":\"Token inválido o expirado\"}");
+            }
+
+            String userId = authResponse.getUserId();
+
             // Defines the request
             UserRequest request = UserRequest.newBuilder()
                 .setUserId(userId)
