@@ -59,6 +59,12 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/profile")
 public class ProfileController {
 
+    @Value("${ftemulator.api.host}")
+    private String apiHost;
+
+    @Value("${ftemulator.api.port}")
+    private String apiPort;
+
     @Value("${ftemulator.auth.host}")
     private String authHost;
 
@@ -148,6 +154,12 @@ public class ProfileController {
             // Send request
             RegisterUserResponse response = profileStub.createUser(request);
 
+            // Check if email is already used
+            if (response.getUserId().equals("User already exists")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("User or email already exists");
+            }
+
             // Confirm user creation
             if (!response.getCreated()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -179,12 +191,22 @@ public class ProfileController {
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
             // Auth
-            String url = "http://api-service:8080/api/auth/createtoken";
+            String url = "http://" + apiHost + ":" + apiPort + "/api/auth/createtoken";
 
             String authResponse = restTemplate.postForObject(url, entity, String.class);
 
             return ResponseEntity.ok(authResponse);
 
+        } catch (io.grpc.StatusRuntimeException e) {
+            // Manejar errores específicos de gRPC
+            if (e.getStatus().getCode() == io.grpc.Status.Code.ALREADY_EXISTS) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("User or email already exists");
+            }
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error gRPC: " + e.getStatus().getDescription());
+                
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

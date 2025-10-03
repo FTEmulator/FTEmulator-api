@@ -69,6 +69,10 @@ public class AuthController {
             // Send request via gRPC
             VerifyTokenResponse response = authStub.verifyToken(request);
 
+            if (response.getUserId().isEmpty()) {
+                return ResponseEntity.status(401).body("{\"error\":\"Token inválido o expirado\"}");
+            }
+
             // Parse response to Json
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
