@@ -19,11 +19,20 @@ public class AuthServices {
 
     // Verify token
     public VerifyTokenResponse verifyToken(String token) {
-        VerifyTokenRequest request = VerifyTokenRequest.newBuilder()
-            .setToken(token)
-            .build();
+        try {
+            VerifyTokenRequest request = VerifyTokenRequest.newBuilder()
+                .setToken(token)
+                .build();
 
-        return authStub.verifyToken(request);
+            return authStub.verifyToken(request);
+            
+        } catch (io.grpc.StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.UNAUTHENTICATED) {
+                // Token inválido - devolver respuesta vacía
+                return VerifyTokenResponse.newBuilder().build();
+            }
+            throw new RuntimeException("Auth service error: " + e.getStatus(), e);
+        }
     }
 
     // Create token

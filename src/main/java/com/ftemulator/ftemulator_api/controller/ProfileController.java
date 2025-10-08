@@ -29,8 +29,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftemulator.ftemulator_api.entities.profile.User;
@@ -111,18 +111,28 @@ public class ProfileController {
 
     // Get user
     @GetMapping("/user")
-    public ResponseEntity<String> getUser(@RequestParam String token) {
+    public ResponseEntity<String> getUser(@RequestHeader("Authorization") String authHeader) {
         try {
+
+            // Verify if the header is present and well-formed
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(400).body("{\"error\":\"Missing or invalid Authorization header\"}");
+            }
             
+            // Delete bearer
+            String token = authHeader.substring(7);
+
+            // Call auth to verify token
             VerifyTokenResponse authResponse = authServices.verifyToken(token);
 
+            // Check if token is valid
             if (authResponse.getUserId().isEmpty()) {
-                return ResponseEntity.status(401).body("{\"error\":\"Token inválido o expirado\"}");
+                return ResponseEntity.status(401).body("{\"error\":\"Invalid or expired token\"}");
             }
 
             String userId = authResponse.getUserId();
 
-            // Defines the request
+            // Call profile service
             UserRequest request = UserRequest.newBuilder()
                 .setUserId(userId)
                 .build();
@@ -133,11 +143,24 @@ public class ProfileController {
             // Parse response to Json
             String json = JsonFormat.printer().print(response);
 
+            // Response
             return ResponseEntity.ok(json);
+            
+        } catch (io.grpc.StatusRuntimeException e) {
+            // Capturar errores específicos de gRPC
+            if (e.getStatus().getCode() == io.grpc.Status.Code.INVALID_ARGUMENT) {
+                return ResponseEntity.status(400)
+                    .body("{\"error\":\"Invalid user ID: " + e.getStatus().getDescription() + "\"}");
+            } else if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                return ResponseEntity.status(404)
+                    .body("{\"error\":\"User not found\"}");
+            } else {
+                return ResponseEntity.status(503)
+                    .body("{\"error\":\"Service error: " + e.getStatus().getDescription() + "\"}");
+            }
         } catch (Exception e) {
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al obtener el usuario: " + e.getMessage());
+            return ResponseEntity.status(500)
+                .body("Error obtaining user: " + e.getMessage());
         }
     }
 
@@ -152,7 +175,8 @@ public class ProfileController {
                 .setEmail(userData.email)
                 .setPassword(userData.password)
                 .setCountry(userData.country);
-            
+
+            // Set optional fields
             if (userData.country != null) {requestBuilder.setCountry(userData.country);}
             if (userData.experience > 0) {requestBuilder.setExperience(userData.experience);}
             if (userData.photo != null) {requestBuilder.setPhoto(userData.photo);}
@@ -184,19 +208,21 @@ public class ProfileController {
             }
             String sessionType = requestHttp.getHeader("User-Agent");
 
-            // Send userId to auth
+            // Send userId, ipAddress, and sessionType to auth
             Map<String, String> bodyMap = new HashMap<>();
             bodyMap.put("userId", userId);
             bodyMap.put("ipAddress", ipAddress);
             bodyMap.put("sessionType", sessionType);
 
-            // Auth
+            // Call auth to create token
             CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
+            // Parse response to Json
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
                 .print(tokenResponse);
 
+            // Response
             return ResponseEntity.ok(json);
 
         } catch (io.grpc.StatusRuntimeException e) {
@@ -212,7 +238,7 @@ public class ProfileController {
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al registrar el usuario: " + e.getMessage());
+                .body("Error to register user: " + e.getMessage());
         }
     }
 
@@ -220,12 +246,10 @@ public class ProfileController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User userData, HttpServletRequest requestHttp) {
         try {
-            System.out.println("Login request: " + userData);
-
-            // Verifica que los datos no sean nulos
+            // Check required fields
             if (userData.getEmail() == null || userData.getPassword() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Email y password son requeridos");
+                    .body("Email and password are required");
             }
 
             // Defines the request
@@ -240,6 +264,7 @@ public class ProfileController {
             // Parse response to Json
             String userId = response.getUserId();
 
+            // Check if userId is valid
             if (userId.equals("invalid") || userId.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid credentials");
@@ -252,24 +277,27 @@ public class ProfileController {
             }
             String sessionType = requestHttp.getHeader("User-Agent");
 
-            // Send userId to auth
+            // Send userId, ipAddress, and sessionType to auth
             Map<String, String> bodyMap = new HashMap<>();
             bodyMap.put("userId", userId);
             bodyMap.put("ipAddress", ipAddress);
             bodyMap.put("sessionType", sessionType);
 
+            // Call auth to create token
             CreateTokenResponse tokenResponse = authServices.createToken(userId, ipAddress, sessionType);
 
+            // Parse response to Json
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
                 .print(tokenResponse);
 
+            // Response
             return ResponseEntity.ok(json);
             
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al verificar el usuario: " + e.getMessage());
+                .body("Error verifying user: " + e.getMessage());
         }
     }
 }

@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ftemulator.ftemulator_api.entities.auth.Token;
@@ -16,7 +16,6 @@ import com.ftemulator.ftemulator_api.proto.AuthOuterClass.AuthStatusRequest;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.AuthStatusResponse;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenRequest;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.CreateTokenResponse;
-import com.ftemulator.ftemulator_api.proto.AuthOuterClass.VerifyTokenRequest;
 import com.ftemulator.ftemulator_api.proto.AuthOuterClass.VerifyTokenResponse;
 import com.ftemulator.ftemulator_api.services.AuthServices;
 import com.google.protobuf.util.JsonFormat;
@@ -62,26 +61,39 @@ public class AuthController {
 
     // Verify token
     @GetMapping("/verifytoken")
-    public ResponseEntity<String> verifyToken(@RequestParam String token) {
+    public ResponseEntity<String> verifyToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            VerifyTokenResponse response = authServices.verifyToken(token);
-
-            if (response.getUserId().isEmpty()) {
-                return ResponseEntity.status(401).body("{\"error\":\"Token inválido o expirado\"}");
+            // Verify if the header is present and well-formed
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(400).body("{\"error\":\"Missing or invalid Authorization header\"}");
             }
 
+            // Delete bearer
+            String token = authHeader.substring(7);
+
+            // Call auth to verify token
+            VerifyTokenResponse response = authServices.verifyToken(token);
+            // Parse response to Json
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
                 .print(response);
 
+            // Response
             return ResponseEntity.ok(json);
 
+        } catch (io.grpc.StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.UNAUTHENTICATED) {
+                return ResponseEntity.status(401)
+                    .body("{\"error\":\"Invalid or expired token\"}");
+            }
+            return ResponseEntity.status(503)
+                .body("{\"error\":\"Error verifying token\"}");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(503).body("{\"error\":\"Internal error\"}");
+            return ResponseEntity.status(503)
+                .body("{\"error\":\"Internal error\"}");
         }
     }
-
 
     // Create token
     @PostMapping("/createtoken")
@@ -102,9 +114,9 @@ public class AuthController {
             String json = JsonFormat.printer()
                 .includingDefaultValueFields()
                 .print(response);
-            
-            return ResponseEntity.ok(json);
 
+            // Response
+            return ResponseEntity.ok(json);
 
         } catch (Exception e) {
             e.printStackTrace();
